@@ -9,26 +9,22 @@ Created on Jun 5, 2012
 
 import numpy
 import logging
-from PIL import Image
+import cv
 from coord import Point
-
-class EmptyFrame(object):
-    def __init__(self, res):
-        self.res = res
-        self.rgb = numpy.zeros((res.x, res.y, 3), dtype=numpy.uint8)
-        self.l = numpy.zeros((res.x, res.y), dtype=numpy.uint32)
         
 class Frame(object):
-    def __init__(self, filename):
-        # Open the image
-        self.filename = filename
-        logging.debug("Loading image file [%s]" %self.filename)
-        self.image = Image.open(self.filename)
-        # Initialize four copies of the image, one for each color and one for luminosity
-        self.rgb = numpy.asarray(self.image, dtype=numpy.uint8)
-        self.l = (self.rgb.astype(numpy.uint32).sum(axis=2) / 3).astype(numpy.uint32)
+    def __init__(self, filename=None, array=None, res=None):
+        if filename:
+            # Open the image
+            self.image = cv.LoadImageM(filename)
+        elif array:
+            self.image = cv.fromarray(array)
+        elif res:
+            # Reverse the x,y because the arrays and the images view them in opposite order
+            self.image = cv.CreateImage(res.t[::-1], cv.IPL_DEPTH_8U, 3)
         
+        # Make a Numpy array from the image
+        self.rgb = numpy.asarray(cv.GetMat(self.image), dtype=numpy.uint8)
+        # Initialize four copies of the image, one for each color and one for luminosity
+        self.l = (self.rgb.astype(numpy.uint32).sum(axis=2) / 3).astype(numpy.uint32)
         self.motion = Point(0,0)
-    
-    def __del__(self):
-        logging.debug("Finished image file [%s]" %self.filename)

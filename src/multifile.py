@@ -7,7 +7,7 @@ Created on Jun 5, 2012
 @license: GPLv3 or later
 '''
 # Used to import images into arrays
-from PIL import Image
+import cv
 
 from frame import Frame
 from coord import Point
@@ -25,7 +25,7 @@ class Input(object):
         #NOTE: This means that the first file won't be closed until the end
         self.firstFile = Frame(self.fl[0])
         # Images and matrices use opposite coordinates (in matrices, it's height, width, channel, in images it's width, height (and all three channels are one tuple)
-        self.res = Point(*self.firstFile.image.size[::-1])
+        self.res = Point(self.firstFile.image.height, self.firstFile.image.width)
     
     def filePairs(self):
         # A generator that yields the previous and next files through the whole list
@@ -43,6 +43,6 @@ class Output(object):
     
     def push(self, frame):
         logging.debug("Writing image output")
-        i = Image.fromarray(frame.rgb, 'RGB')
-        i.save(self.template % self.index)
+        i = cv.fromarray(frame.rgb)
+        cv.SaveImage(self.template % self.index, i)
         self.index += 1

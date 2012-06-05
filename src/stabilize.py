@@ -21,8 +21,10 @@ from motion import Motion
 
 import argparse
 ap = argparse.ArgumentParser(description="Stabilizes a sequence of pictures to mask shaking, jitter and other changes", version=STABILIZE_VERSION)
+ap.add_argument_group("Multiple Image Input/Output")
 ap.add_argument("input", help="Shell glob for input files (most images, eg. jpg png.. accepted)")
 ap.add_argument("output", help="Template for image output, with %%04d (or %%03d or such) to be replaced with an incrementing number")
+ap.add_argument("--multifile-in-stop", type=int, help="Only input the first N images")
 args = ap.parse_args()
             
 il = multifile.Input(args.input)

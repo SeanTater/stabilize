@@ -32,6 +32,11 @@ class Point(object):
     def truncate(self, limit):
         self.x = max(-limit, min(self.x, limit))
         self.y = max(-limit, min(self.y, limit))
+    
+    def asTuple(self):
+        return self.x, self.y
+    
+    t = property(asTuple)
 
 class Box(object):
     def __init__(self, start, stop):

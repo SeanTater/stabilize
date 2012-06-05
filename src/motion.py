@@ -6,7 +6,7 @@ Created on Jun 5, 2012
 
 import logging
 from coord import Point, Box
-from frame import EmptyFrame
+from frame import Frame
 import sys
 
 class Motion(object):
@@ -60,7 +60,7 @@ class Motion(object):
     def compensate(self, image):
         logging.debug("Compensating for image movement..")
         newres = self.res + self.border + self.border
-        surface = EmptyFrame(newres)
+        surface = Frame(res=newres)
         
         # Start with a box of size res
         dest_box = Box(Point(0,0), self.res)
