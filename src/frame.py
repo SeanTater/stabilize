@@ -14,9 +14,11 @@ class Frame(object):
     def __init__(self, array=None, res=None):
         if array is not None:
             self.rgb = array
-        if res is not None:
+        elif res is not None:
             self.rgb = numpy.zeros(res.tz, dtype=numpy.uint8)
+        else:
+            raise "Need "
         
         # Initialize four copies of the image, one for each color and one for luminosity
-        self.l = (self.rgb.astype(numpy.uint32).sum(axis=2) / 3).astype(numpy.uint32)
+        self.l = self.rgb.astype(numpy.float32).sum(axis=2)
         self.motion = Point(0,0)

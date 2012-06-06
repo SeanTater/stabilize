@@ -49,10 +49,13 @@ class Point(object):
         ''' Returns (x, y, z) '''
         return self.x, self.y, self.z
     
-    def truncate(self, limit):
+    def truncate(self, other):
         ''' Limit x and y (not z) to a minimum of -limit and a maximum of +limit '''
-        self.x = max(-limit, min(self.x, limit))
-        self.y = max(-limit, min(self.y, limit))
+        self.x = max(-other.x, min(self.x, other.x))
+        self.y = max(-other.y, min(self.y, other.y))
+    
+    def within(self, less, more):
+        return less.x < self.x < more.x and less.y < self.y < more.y
 
 
 class Box(object):
