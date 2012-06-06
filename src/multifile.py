@@ -7,7 +7,7 @@ Created on Jun 5, 2012
 @license: GPLv3 or later
 '''
 # Used to import images into arrays
-import cv
+import cv2
 
 from frame import Frame
 from coord import Point
@@ -32,7 +32,7 @@ class Input(object):
         # A generator that yields the previous and next files through the whole list
         lastFile = self.firstFile
         for filename in self.fl[1:]:
-            nextFile = Frame(filename)
+            nextFile = Frame(array=cv2.imread(filename))
             yield (lastFile, nextFile)
             lastFile = nextFile
 
@@ -44,6 +44,4 @@ class Output(object):
     
     def push(self, frame):
         logging.debug("Writing image output")
-        i = cv.fromarray(frame.rgb)
-        cv.SaveImage(self.template % self.index, i)
-        self.index += 1
+        cv2.imwrite(self.template % self.index, frame.rgb)
