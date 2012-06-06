@@ -17,9 +17,10 @@ import logging
 import glob
 
 class Input(object):
-    def __init__(self, shglob):
+    def __init__(self, shglob, start=0, stop=-1):
         self.fl = glob.glob(shglob)
         self.fl.sort()
+        self.fl = self.fl[start:stop]
         assert len(self.fl) >= 2, "Shell glob does not result in enough files. Need at least 2."
         
         #NOTE: This means that the first file won't be closed until the end
@@ -27,7 +28,7 @@ class Input(object):
         # Images and matrices use opposite coordinates (in matrices, it's height, width, channel, in images it's width, height (and all three channels are one tuple)
         self.res = Point(self.firstFile.image.height, self.firstFile.image.width)
     
-    def filePairs(self):
+    def pairs(self):
         # A generator that yields the previous and next files through the whole list
         lastFile = self.firstFile
         for filename in self.fl[1:]:
@@ -36,10 +37,10 @@ class Input(object):
             lastFile = nextFile
 
 class Output(object):
-    def __init__(self, template, res):
+    def __init__(self, template, res, startindex=0):
         self.template = template
         self.res = res
-        self.index = 0
+        self.index = startindex or 0
     
     def push(self, frame):
         logging.debug("Writing image output")

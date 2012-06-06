@@ -7,6 +7,8 @@ Created on Jun 5, 2012
 import logging
 from coord import Point, Box
 from frame import Frame
+import cv
+import numpy
 import sys
 
 class Motion(object):
@@ -59,6 +61,7 @@ class Motion(object):
     
     def compensate(self, image):
         logging.debug("Compensating for image movement..")
+        
         newres = self.res + self.border + self.border
         surface = Frame(res=newres)
         
