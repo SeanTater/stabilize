@@ -2,7 +2,6 @@
 Created on Jun 5, 2012
 
 @author: Sean Gallagher
-@summary: Input and Output Frames to individual files
 @copyright: (C) 2012 Sean Gallagher
 @license: GPLv3 or later
 '''
