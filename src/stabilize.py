@@ -34,11 +34,9 @@ def run():
     il = cvvideo.Input(filename=args.input)
     ol = cvvideo.Output(filename=args.output, res=il.res + Point(256,256))
     m = Motion(il.res)
-    lastmv = Point(0,0)
     
     for image0, image1 in il.pairs():
-        lastmv = m.minisearch(image0, image1, pointgen=m.diamond_pointgen, lastmv=lastmv)
-        image1.motion = image0.motion + lastmv
+        image1.motion = image0.motion + m.minisearch(image0, image1)
         print image1.motion
         image1.motion.truncate(Point(128, 128))
         newimage = m.compensate(image1)
