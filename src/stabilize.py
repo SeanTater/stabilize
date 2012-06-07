@@ -29,6 +29,7 @@ def run():
     ag.add_argument("--multifile-in-start", type=int, metavar='N', help="Start the input images at the Nth image (counting from 0)")
     ag.add_argument("--multifile-in-stop", type=int, metavar='N', help="Stop the input images at the Nth image (counting from 0)")
     ag.add_argument("--multifile-out-start", type=int, metavar='N', help="Start counting output images at N")
+    ap.add_argument("--decay", type=float, metavar="N", default=0.975, help="Motion vector decay - 0.95 to 0.999 will cause a drift toward the center, 1 disables this effect.")
     args = ap.parse_args()
                 
     il = cvvideo.Input(filename=args.input)
@@ -39,6 +40,8 @@ def run():
         image1.motion = image0.motion + m.minisearch(image0, image1)
         print image1.motion
         image1.motion.truncate(Point(128, 128))
+        image1.motion.x *= args.decay
+        image1.motion.y *= args.decay
         newimage = m.compensate(image1)
         ol.push(newimage)
 

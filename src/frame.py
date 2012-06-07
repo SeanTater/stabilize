@@ -16,8 +16,6 @@ class Frame(object):
             self.rgb = array
         elif res is not None:
             self.rgb = numpy.zeros(res.tz, dtype=numpy.uint8)
-        else:
-            raise "Need "
         
         # Initialize four copies of the image, one for each color and one for luminosity
         self.l = self.rgb.astype(numpy.float32).sum(axis=2)
