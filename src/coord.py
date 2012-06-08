@@ -45,8 +45,8 @@ class Point(object):
     tz = property(lambda self: (self.x, self.y, self.z) )
     
     def move(self, scalar):
-        self.x *= scalar
-        self.y *= scalar
+        self.x += scalar
+        self.y += scalar
     
     def scale(self, scalar):
         self.x *= scalar

@@ -10,12 +10,14 @@ import logging
 from coord import Point, Box
 from frame import Frame
 from option import OptGroup
+import pdb
 opts = OptGroup("m", "Motion Detection")
 opts['decay'] = dict(type=float, value=0.975, help="Motion vector decay - 0.95 to 0.999 will cause a drift toward the center, 1 disables this effect.")
 opts['search'] = dict(type=int, value=16, help="Search depth for matching corners (larger numbers are marginally slower but not necessarily more accurate)")
 opts['corners'] = dict(type=int, value=24, help="Maximum number of corners to search for")
-opts['cdist'] = dict(type=float, value=0.1, help="Minimum distance of corners from each other relative to width of image")
-    
+opts['corner-dist'] = dict(type=float, value=0.1, help="Minimum distance of corners from each other relative to width of image")
+opts['border'] = dict(type=int, value=64, help="How much empty black border to leave on the edges of the outer image so that the inner image can move")
+opts['corner-range'] = dict(type=float, value=0.01, help="How much worse the worst corner should be in comparison to the best")
 
 import sys
 import cv2
@@ -23,9 +25,12 @@ import cv2
 class Motion(object):
     def __init__(self, res):
         self.res = res
-        self.border = Point(128, 128)
+        self.border = Point(opts("border"), opts("border"))
         self.compareBox = Box(self.border, self.res-self.border)
         self.total_shift = Point(0,0)
+        self.max_corners = opts('corners')
+        self.corner_range = opts('corner-range')
+        self.corner_dist = opts('corner-dist')
     
     def compare(self, delta, image0, image1, box):
         return abs((box+delta).fetch(image0.l) - box.fetch(image1.l)).sum()
@@ -46,13 +51,14 @@ class Motion(object):
     def minisearch(self, image0, image1):
         # Minisearch follows corners around the image
         # CV2 provides the corners
-        corners = cv2.goodFeaturesToTrack(image0.l, opts('corners'), opts('cdist'), self.res.x*0.1)
+        corners = cv2.goodFeaturesToTrack(image0.l, self.max_corners, self.corner_range, self.corner_dist)
+
         results = []
         for corner in corners:
             # I haven't the foggiest idea why these points are buried so deeply in nested arrays
             corner = Point(*corner[0])
             if not corner.within(self.border, self.res - self.border): continue
-            box = Box(corner - Point(8, 8), corner + Point(8, 8))
+            box = Box(corner - Point(4, 4), corner + Point(4,4))
             mv = self.search(box, image0, image1)
             if mv is not None:
                 # A None mv means the search failed
