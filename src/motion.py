@@ -9,6 +9,14 @@ Created on Jun 5, 2012
 import logging
 from coord import Point, Box
 from frame import Frame
+from option import OptGroup
+opts = OptGroup("m", "Motion Detection")
+opts['decay'] = dict(type=float, value=0.975, help="Motion vector decay - 0.95 to 0.999 will cause a drift toward the center, 1 disables this effect.")
+opts['search'] = dict(type=int, value=16, help="Search depth for matching corners (larger numbers are marginally slower but not necessarily more accurate)")
+opts['corners'] = dict(type=int, value=24, help="Maximum number of corners to search for")
+opts['cdist'] = dict(type=float, value=0.1, help="Minimum distance of corners from each other relative to width of image")
+    
+
 import sys
 import cv2
 
@@ -17,8 +25,7 @@ class Motion(object):
         self.res = res
         self.border = Point(128, 128)
         self.compareBox = Box(self.border, self.res-self.border)
-        self.last_corners = None
-        self.corners_ttl = 0
+        self.total_shift = Point(0,0)
     
     def compare(self, delta, image0, image1, box):
         return abs((box+delta).fetch(image0.l) - box.fetch(image1.l)).sum()
@@ -39,7 +46,7 @@ class Motion(object):
     def minisearch(self, image0, image1):
         # Minisearch follows corners around the image
         # CV2 provides the corners
-        corners = cv2.goodFeaturesToTrack(image0.l, 24, 0.1, self.res.x*0.1)
+        corners = cv2.goodFeaturesToTrack(image0.l, opts('corners'), opts('cdist'), self.res.x*0.1)
         results = []
         for corner in corners:
             # I haven't the foggiest idea why these points are buried so deeply in nested arrays
@@ -53,19 +60,21 @@ class Motion(object):
             
         if len(results) == 0:
             logging.warning("No available corners. Not good!!")
-            return Point(0,0)
         else:
             # Either we have good results or this is the best we could do
             mv = sum(results, Point(0,0))
             mv.x /= len(results)
             mv.y /= len(results)
-            return mv
+            self.total_shift += mv
+        # The box should drift toward the middle
+        self.total_shift.scale(opts('decay'))
+        return self.total_shift
     
-    def search(self, box, image0, image1, depth=16, start=Point(0,0)):
+    def search(self, box, image0, image1, start=Point(0,0)):
         best_score = sys.maxint
         best_delta = base_delta = start
         rel_delta = Point(0,0)
-        for d in range(depth):
+        for d in range(opts("search")):
             best_rel_delta = Point(0,0)
             for rel_delta.x, rel_delta.y in self.pointgen():
                 score = self.compare(rel_delta+base_delta, image0, image1, box)
@@ -91,6 +100,12 @@ class Motion(object):
         
         # Move it to counter the found motion
         dest_box += image.motion
+        
+        # Trim it to the image resolution
+        dest_box.start.x = max(dest_box.start.x, 0)
+        dest_box.start.y = max(dest_box.start.y, 0)
+        dest_box.stop.x = min(dest_box.stop.x, newres.x)
+        dest_box.stop.y = min(dest_box.stop.y, newres.y)
         
         # Copy each of the channels
         dest_box.send(image.rgb, surface.rgb)

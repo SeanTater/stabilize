@@ -16,10 +16,9 @@ import logging
 import glob
 
 class Input(object):
-    def __init__(self, shglob, start=0, stop=-1):
+    def __init__(self, shglob):
         self.fl = glob.glob(shglob)
         self.fl.sort()
-        self.fl = self.fl[start:stop]
         assert len(self.fl) >= 2, "Shell glob does not result in enough files. Need at least 2."
         
         #NOTE: This means that the first file won't be closed until the end
@@ -36,10 +35,10 @@ class Input(object):
             lastFile = nextFile
 
 class Output(object):
-    def __init__(self, template, res, startindex=0):
+    def __init__(self, template, res):
         self.template = template
         self.res = res
-        self.index = startindex or 0
+        self.index = 0
     
     def push(self, frame):
         logging.debug("Writing image output")

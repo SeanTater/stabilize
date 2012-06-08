@@ -44,14 +44,13 @@ class Point(object):
     r = property(lambda self: (self.y, self.x) )
     tz = property(lambda self: (self.x, self.y, self.z) )
     
-    def asTuplez(self):
-        ''' Returns (x, y, z) '''
-        return self.x, self.y, self.z
+    def move(self, scalar):
+        self.x *= scalar
+        self.y *= scalar
     
-    def truncate(self, other):
-        ''' Limit x and y (not z) to a minimum of -limit and a maximum of +limit '''
-        self.x = max(-other.x, min(self.x, other.x))
-        self.y = max(-other.y, min(self.y, other.y))
+    def scale(self, scalar):
+        self.x *= scalar
+        self.y *= scalar
     
     def within(self, less, more):
         return less.x < self.x < more.x and less.y < self.y < more.y
@@ -67,8 +66,10 @@ class Box(object):
     def __sub__(self, other):
         return Box(self.start - other, self.stop - other)
     
+    res = property(lambda self: self.stop - self.start)
+    
     def fetch(self, a):
         return a[self.start.x:self.stop.x, self.start.y:self.stop.y]
     
     def send(self, afrom, ato):
-        ato[self.start.x:self.stop.x, self.start.y:self.stop.y] = afrom[:(self.stop-self.start).x, :(self.stop-self.start).y]
+        ato[self.start.x:self.stop.x, self.start.y:self.stop.y] = afrom[:self.res.x, :self.res.y]
