@@ -58,7 +58,6 @@ def run():
         outputList = cvvideo.Output(filename=args.output,
                                     res=inputList.res + Point(256,256))
     m = Motion(inputList.res)
-    
     for image0, image1 in inputList.pairs():
         image1.motion = m.minisearch(image0, image1)
         print image1.motion
